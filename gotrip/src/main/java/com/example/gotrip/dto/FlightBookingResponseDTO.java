@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter @Builder
 public class FlightBookingResponseDTO {
@@ -12,8 +13,7 @@ public class FlightBookingResponseDTO {
     private LocalDate date;
     private String origin;
     private String destination;
-    private String seatType;
-    private Integer numberSeat;
-    private double price;
+    private double totalPrice;
     private Long user;
+    private List<FlightBookingDetailResponseDTO> passengers;
 }

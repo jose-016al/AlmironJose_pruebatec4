@@ -87,9 +87,7 @@ public class FlightService implements IFlightService {
     @Override
     public void delete(Long id) {
         Flight flight = findFlightOrThrow(id);
-        boolean hasBookings = flight.getSeats().stream()
-                .anyMatch(seat -> !seat.getBookings().isEmpty());
-
+        boolean hasBookings = repository.hasActiveBookings(id);
         if (hasBookings) {
             throw new FlightException("No se puede eliminar el vuelo porque tiene reservas activas.");
         }

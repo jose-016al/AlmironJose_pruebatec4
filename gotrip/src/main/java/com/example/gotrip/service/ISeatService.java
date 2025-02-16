@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface ISeatService {
     public Seat findSeatAvailable(String flightCode, SeatType seatType);
+    public Flight findByFlightCode(String flightCode);
     public void reserveSeat(Long id);
     public void releaseSeat(Long id);
 }

@@ -1,15 +1,10 @@
 package com.example.gotrip.service;
 
-import com.example.gotrip.dto.FlightBookingRequestDTO;
-import com.example.gotrip.dto.FlightBookingResponseDTO;
-import com.example.gotrip.dto.HotelBookingRequestDTO;
-import com.example.gotrip.dto.HotelBookingResponseDTO;
+import com.example.gotrip.dto.*;
 import com.example.gotrip.exception.FlightException;
 import com.example.gotrip.exception.InvalidDateException;
 import com.example.gotrip.exception.ResourceNotFoundException;
-import com.example.gotrip.model.FlightBooking;
-import com.example.gotrip.model.HotelBooking;
-import com.example.gotrip.model.Room;
+import com.example.gotrip.model.*;
 import com.example.gotrip.repository.FlightBookingRepository;
 import com.example.gotrip.util.RoomType;
 import com.example.gotrip.util.SeatType;
@@ -24,24 +19,22 @@ public class FlightBookingService implements IFlightBookingService {
 
     private final FlightBookingRepository repository;
     private final IUserService userService;
-    private final ISeatService seatService;
+    private final FlightBookingDetailService flightBookingDetailService;
 
     @Override
     public FlightBookingResponseDTO save(FlightBookingRequestDTO request) {
         FlightBooking booking = FlightBooking.builder()
-                .seat(seatService.findSeatAvailable(
-                        request.getFlightCode(),
-                        SeatType.valueOf(request.getSeatType().toUpperCase())
-                ))
                 .user(userService.findUser(request.getUser()))
                 .build();
+        booking.setFlightBookingDetails(flightBookingDetailService.generateDetails(request, booking));
+        booking.setTotalPrice(calculateTotalPrice(booking));
         boolean alreadyBooked = repository.existsByUserAndFlight(
-                booking.getUser(), booking.getSeat().getFlight()
+                booking.getUser(), flightBookingDetailService.findByFlightCode(request.getFlightCode())
         );
         if (alreadyBooked) {
             throw new FlightException("Ya tienes una reserva en este vuelo.");
         }
-        seatService.reserveSeat(booking.getSeat().getId());
+        flightBookingDetailService.reserveSeat(booking);
         repository.save(booking);
         return buildResponseDTO(booking);
     }
@@ -68,7 +61,7 @@ public class FlightBookingService implements IFlightBookingService {
     @Override
     public void delete(Long id) {
         FlightBooking booking = findReserveOrThrow(id);
-        seatService.releaseSeat(id);
+        flightBookingDetailService.releaseSeat(booking);
         repository.delete(booking);
     }
 
@@ -77,16 +70,29 @@ public class FlightBookingService implements IFlightBookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("No se ha encontrado la reserva con el ID: " + id));
     }
 
+    private double calculateTotalPrice(FlightBooking booking) {
+        return booking.getFlightBookingDetails().stream()
+                .mapToDouble(bookingDetail -> bookingDetail.getSeat().getPrice())
+                .sum();
+    }
+
+    private Flight findFlight(FlightBooking booking) {
+        return booking.getFlightBookingDetails().stream()
+                .map(flightBookingDetail -> flightBookingDetail.getSeat().getFlight())
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("No se ha encontrado el vuelo"));
+    }
+
+
     private FlightBookingResponseDTO buildResponseDTO(FlightBooking booking) {
         return FlightBookingResponseDTO.builder()
                 .reserveId(booking.getId())
-                .date(booking.getSeat().getFlight().getDepartureDate())
-                .origin(booking.getSeat().getFlight().getOrigin())
-                .destination(booking.getSeat().getFlight().getDestination())
-                .flightCode(booking.getSeat().getFlight().getFlightCode())
-                .seatType(booking.getSeat().getSeatType().name())
-                .numberSeat(booking.getSeat().getNumber())
-                .price(booking.getSeat().getPrice())
+                .date(findFlight(booking).getDepartureDate())
+                .origin(findFlight(booking).getOrigin())
+                .destination(findFlight(booking).getDestination())
+                .flightCode(findFlight(booking).getFlightCode())
+                .totalPrice(booking.getTotalPrice())
+                .passengers(flightBookingDetailService.getDetailsResponseDTOS(booking))
                 .user(booking.getUser().getId())
                 .build();
     }

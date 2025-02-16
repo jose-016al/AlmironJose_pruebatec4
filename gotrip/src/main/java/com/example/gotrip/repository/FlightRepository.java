@@ -19,4 +19,6 @@ public interface FlightRepository extends JpaRepository<Flight, Long> {
                                @Param("origin") String origin,
                                @Param("destination") String destination);
     Optional<Flight> findByFlightCode(String flightCode);
+    @Query("SELECT COUNT(fbd) > 0 FROM FlightBookingDetail fbd WHERE fbd.seat.flight.id = :flightId")
+    boolean hasActiveBookings(@Param("flightId") Long flightId);
 }

@@ -13,9 +13,14 @@ import java.util.List;
 @Repository
 public interface FlightBookingRepository extends JpaRepository<FlightBooking, Long> {
 
-    @Query("SELECT fb FROM FlightBooking fb WHERE fb.seat.flight.id = :flightId")
+    @Query("SELECT fb FROM FlightBooking fb " +
+            "JOIN fb.flightBookingDetails fbd " +
+            "WHERE fbd.seat.flight.id = :flightId")
     List<FlightBooking> findByFlightId(@Param("flightId") Long flightId);
 
-    @Query("SELECT COUNT(fb) > 0 FROM FlightBooking fb WHERE fb.user = :user AND fb.seat.flight = :flight")
+    @Query("SELECT COUNT(fb) > 0 FROM FlightBooking fb " +
+            "JOIN fb.flightBookingDetails fbd " +
+            "WHERE fb.user = :user AND fbd.seat.flight = :flight")
     boolean existsByUserAndFlight(@Param("user") User user, @Param("flight") Flight flight);
+
 }

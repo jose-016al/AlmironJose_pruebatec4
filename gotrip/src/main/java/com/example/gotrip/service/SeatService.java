@@ -4,6 +4,7 @@ import com.example.gotrip.exception.FlightException;
 import com.example.gotrip.exception.ResourceNotFoundException;
 import com.example.gotrip.model.Flight;
 import com.example.gotrip.model.Seat;
+import com.example.gotrip.model.User;
 import com.example.gotrip.util.SeatType;
 import com.example.gotrip.repository.SeatRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,12 +19,15 @@ public class SeatService implements ISeatService {
 
     @Override
     public Seat findSeatAvailable(String flightCode, SeatType seatType) {
-        Flight flight = flightService.findByFlightCode(flightCode);
-
-        return flight.getSeats().stream()
+        return findByFlightCode(flightCode).getSeats().stream()
                 .filter(seat -> seat.getSeatType().equals(seatType) && seat.isAvailable())
                 .findFirst()
                 .orElseThrow(() -> new FlightException("No hay asientos disponibles de tipo " + seatType));
+    }
+
+    @Override
+    public Flight findByFlightCode(String flightCode) {
+        return flightService.findByFlightCode(flightCode);
     }
 
     @Override

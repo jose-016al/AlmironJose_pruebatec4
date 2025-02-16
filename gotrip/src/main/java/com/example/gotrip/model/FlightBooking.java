@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -17,11 +18,13 @@ public class FlightBooking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private double totalPrice;
+
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToOne
-    @JoinColumn(name = "seat_id", nullable = false, unique = true)
-    private Seat seat;
+    @OneToMany(mappedBy = "flightBooking", cascade = CascadeType.ALL)
+    private List<FlightBookingDetail> flightBookingDetails;
 }
