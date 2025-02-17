@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,6 +22,12 @@ public class HotelBookingDetailService implements IHotelBookingDetailService {
     private final HotelBookingDetailRepository repository;
     private final IRoomService roomService;
 
+    /**
+     * Genera las estancias de los huéspedes a partir de la solicitud de reserva.
+     * @param request Datos de la solicitud de la reserva del hotel
+     * @param booking Objeto de reserva del hotel
+     * @return Lista de detalles de la reserva del hotel para cada huésped
+     */
     @Override
     public List<HotelBookingDetail> generateStays(HotelBookingRequestDTO request, HotelBooking booking) {
         Map<RoomType, List<Room>> availableRoomsByType = findRoomAvailable(
@@ -52,22 +57,33 @@ public class HotelBookingDetailService implements IHotelBookingDetailService {
                 .toList();
     }
 
-    private Map<RoomType, List<Room>> findRoomAvailable(String hotelCode, LocalDate checkIn, LocalDate checkOut,
-                                                        List<HotelBookingDetailRequestDTO> guests) {
-        return guests.stream()
-                .map(guest -> RoomType.valueOf(guest.getRoomType().toUpperCase()))
-                .distinct()
-                .collect(Collectors.toMap(
-                        type -> type,
-                        type -> roomService.findRoomAvailable(hotelCode, checkIn, checkOut, type,
-                                (int) guests.stream().filter(g -> g.getRoomType().equalsIgnoreCase(type.name())).count())
-                ));
-    }
-
+    /**
+     * Calcula el precio total de la reserva de hotel para los huéspedes.
+     * @param bookingDetails Detalles de la reserva del hotel para cada huésped
+     * @param checkIn Fecha de entrada
+     * @param checkOut Fecha de salida
+     * @return Precio total de la reserva
+     */
+    @Override
     public double calculateTotalPrice(List<HotelBookingDetail> bookingDetails, LocalDate checkIn, LocalDate checkOut) {
         return roomService.calculateTotalPrice(bookingDetails, checkIn, checkOut);
     }
 
+    /**
+     * Busca un hotel a partir de su código.
+     * @param hotelCode Código del hotel
+     * @return Objeto hotel correspondiente al código proporcionado
+     */
+    @Override
+    public Hotel findByHotelCode(String hotelCode) {
+        return roomService.findByHotelCode(hotelCode);
+    }
+
+    /**
+     * Convierte los detalles de la reserva del hotel en un DTO de respuesta para cada huésped.
+     * @param booking Objeto de reserva del hotel
+     * @return Lista de DTOs con los detalles de la reserva de cada huésped
+     */
     @Override
     public List<HotelBookingDetailResponseDTO> getStaysResponseDTOS(HotelBooking booking) {
         return booking.getHotelBookingDetails().stream()
@@ -81,5 +97,23 @@ public class HotelBookingDetailService implements IHotelBookingDetailService {
                 .toList();
     }
 
-
+    /**
+     * Busca las habitaciones disponibles por tipo para un hotel y unas fechas específicas.
+     * @param hotelCode Código del hotel
+     * @param checkIn Fecha de entrada
+     * @param checkOut Fecha de salida
+     * @param guests Lista de huéspedes con sus tipos de habitación
+     * @return Mapa con las habitaciones disponibles por tipo de habitación
+     */
+    private Map<RoomType, List<Room>> findRoomAvailable(String hotelCode, LocalDate checkIn, LocalDate checkOut,
+                                                        List<HotelBookingDetailRequestDTO> guests) {
+        return guests.stream()
+                .map(guest -> RoomType.valueOf(guest.getRoomType().toUpperCase()))
+                .distinct()
+                .collect(Collectors.toMap(
+                        type -> type,
+                        type -> roomService.findRoomAvailable(hotelCode, checkIn, checkOut, type,
+                                (int) guests.stream().filter(g -> g.getRoomType().equalsIgnoreCase(type.name())).count())
+                ));
+    }
 }

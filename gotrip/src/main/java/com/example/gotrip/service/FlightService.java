@@ -2,14 +2,10 @@ package com.example.gotrip.service;
 
 import com.example.gotrip.dto.*;
 import com.example.gotrip.exception.FlightException;
-import com.example.gotrip.exception.HotelException;
 import com.example.gotrip.exception.InvalidDateException;
 import com.example.gotrip.exception.ResourceNotFoundException;
 import com.example.gotrip.model.Flight;
-import com.example.gotrip.model.Hotel;
-import com.example.gotrip.model.Room;
 import com.example.gotrip.model.Seat;
-import com.example.gotrip.util.RoomType;
 import com.example.gotrip.util.SeatType;
 import com.example.gotrip.repository.FlightRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +23,11 @@ public class FlightService implements IFlightService {
 
     private final FlightRepository repository;
 
+    /**
+     * Guarda una nueva reserva de vuelo.
+     * @param request Datos de la solicitud de la reserva
+     * @return DTO de la respuesta con los detalles de la reserva
+     */
     @Override
     public FlightResponseDTO save(FlightRequestDTO request) {
         if (request.getReturnDate() != null && request.getReturnDate().isBefore(request.getDepartureDate())) {
@@ -45,6 +46,10 @@ public class FlightService implements IFlightService {
         return buildResponseDTO(flight);
     }
 
+    /**
+     * Obtiene todos los vuelos registrados.
+     * @return Lista de DTOs de vuelos con sus detalles
+     */
     @Override
     public List<FlightResponseDTO> findAll() {
         return repository.findAll().stream()
@@ -52,6 +57,14 @@ public class FlightService implements IFlightService {
                 .toList();
     }
 
+    /**
+     * Busca vuelos según las fechas y los lugares de origen y destino.
+     * @param dateFrom Fecha de inicio de la búsqueda
+     * @param dateTo Fecha de fin de la búsqueda
+     * @param origin Ciudad de origen
+     * @param destination Ciudad de destino
+     * @return Lista de DTOs de vuelos que coinciden con la búsqueda
+     */
     @Override
     public List<FlightResponseDTO> searchFlights(LocalDate dateFrom, LocalDate dateTo, String origin, String destination) {
         return repository.searchFlights(dateFrom, dateTo, origin, destination).stream()
@@ -59,17 +72,34 @@ public class FlightService implements IFlightService {
                 .toList();
     }
 
+    /**
+     * Encuentra un vuelo por su ID.
+     * @param id ID del vuelo
+     * @return DTO de la respuesta con los detalles del vuelo
+     */
     @Override
     public FlightResponseDTO findById(Long id) {
         return buildResponseDTO(findFlightOrThrow(id));
     }
 
+    /**
+     * Encuentra un vuelo por su código de vuelo.
+     * @param flightCode Código único del vuelo
+     * @return Objeto vuelo correspondiente al código proporcionado
+     * @throws ResourceNotFoundException Si no se encuentra el vuelo
+     */
     @Override
     public Flight findByFlightCode(String flightCode) {
         return repository.findByFlightCode(flightCode)
                 .orElseThrow(() -> new ResourceNotFoundException("No se ha encontrado el vuelo con el codigo: " + flightCode));
     }
 
+    /**
+     * Actualiza un vuelo existente con nuevos datos.
+     * @param id ID del vuelo a actualizar
+     * @param request Nuevos datos de la solicitud
+     * @return DTO de la respuesta con los detalles del vuelo actualizado
+     */
     @Override
     public FlightResponseDTO update(Long id, FlightRequestDTO request) {
         Flight flight = findFlightOrThrow(id);
@@ -84,6 +114,11 @@ public class FlightService implements IFlightService {
         return buildResponseDTO(flight);
     }
 
+    /**
+     * Elimina un vuelo de la base de datos.
+     * @param id ID del vuelo a eliminar
+     * @throws FlightException Si el vuelo tiene reservas activas
+     */
     @Override
     public void delete(Long id) {
         Flight flight = findFlightOrThrow(id);
@@ -94,6 +129,12 @@ public class FlightService implements IFlightService {
         repository.delete(flight);
     }
 
+    /**
+     * Genera un código único para el vuelo basado en el origen, destino y un número aleatorio.
+     * @param origin Ciudad de origen
+     * @param destination Ciudad de destino
+     * @return Código único para el vuelo
+     */
     private String generateFlightCode(String origin, String destination) {
         String originCode = origin.substring(0, Math.min(origin.length(), 3)).toUpperCase();
         String destinationCode = destination.substring(0, Math.min(destination.length(), 3)).toUpperCase();
@@ -103,6 +144,12 @@ public class FlightService implements IFlightService {
         return repository.findByFlightCode(flightCode).isPresent() ? generateFlightCode(origin, destination) : flightCode;
     }
 
+    /**
+     * Crea los asientos asociados a un vuelo.
+     * @param seats Datos de los asientos a crear
+     * @param flight Vuelo al que pertenecen los asientos
+     * @return Lista de asientos creados
+     */
     private List<Seat> createSeatsForFlight(List<SeatRequestDTO> seats, Flight flight) {
         final int[] seatNumberCounter = {1};
 
@@ -124,11 +171,22 @@ public class FlightService implements IFlightService {
                 .toList();
     }
 
+    /**
+     * Busca un vuelo por su ID y lanza una excepción si no se encuentra.
+     * @param id ID del vuelo
+     * @return Vuelo correspondiente al ID
+     * @throws ResourceNotFoundException Si no se encuentra el vuelo
+     */
     private Flight findFlightOrThrow(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No se ha encontrado el vuelo con ID: " + id));
     }
 
+    /**
+     * Construye un DTO de respuesta para un vuelo.
+     * @param flight Vuelo a convertir en DTO
+     * @return DTO con los detalles del vuelo
+     */
     private FlightResponseDTO buildResponseDTO(Flight flight) {
         return FlightResponseDTO.builder()
                 .flightCode(flight.getFlightCode())
@@ -141,6 +199,11 @@ public class FlightService implements IFlightService {
                 .build();
     }
 
+    /**
+     * Obtiene los DTOs de los asientos de un vuelo.
+     * @param flight Vuelo cuyos asientos se quieren obtener
+     * @return Lista de DTOs de los asientos
+     */
     private List<SeatResponseDTO> getSeatResponseDTOS(Flight flight) {
         return flight.getSeats().stream()
                 .collect(Collectors.groupingBy(Seat::getSeatType))
@@ -155,6 +218,11 @@ public class FlightService implements IFlightService {
                 .toList();
     }
 
+    /**
+     * Cuenta el número de asientos disponibles por tipo en un vuelo.
+     * @param flight Vuelo cuyo número de asientos disponibles se quiere contar
+     * @return Mapa de tipos de asiento y el número de asientos disponibles de ese tipo
+     */
     private Map<SeatType, Long> countAvailableSeatsByType(Flight flight) {
         return flight.getSeats().stream()
                 .filter(Seat::isAvailable)

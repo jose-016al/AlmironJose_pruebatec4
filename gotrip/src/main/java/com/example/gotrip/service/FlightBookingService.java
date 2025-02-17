@@ -2,12 +2,9 @@ package com.example.gotrip.service;
 
 import com.example.gotrip.dto.*;
 import com.example.gotrip.exception.FlightException;
-import com.example.gotrip.exception.InvalidDateException;
 import com.example.gotrip.exception.ResourceNotFoundException;
 import com.example.gotrip.model.*;
 import com.example.gotrip.repository.FlightBookingRepository;
-import com.example.gotrip.util.RoomType;
-import com.example.gotrip.util.SeatType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +18,11 @@ public class FlightBookingService implements IFlightBookingService {
     private final IUserService userService;
     private final FlightBookingDetailService flightBookingDetailService;
 
+    /**
+     * Guarda una nueva reserva de vuelo.
+     * @param request Datos de la solicitud de la reserva
+     * @return DTO de la respuesta con los detalles de la reserva
+     */
     @Override
     public FlightBookingResponseDTO save(FlightBookingRequestDTO request) {
         FlightBooking booking = FlightBooking.builder()
@@ -38,6 +40,10 @@ public class FlightBookingService implements IFlightBookingService {
         return buildResponseDTO(booking);
     }
 
+    /**
+     * Obtiene todas las reservas de vuelo.
+     * @return Lista de todas las reservas en formato DTO
+     */
     @Override
     public List<FlightBookingResponseDTO> findAll() {
         return repository.findAll().stream()
@@ -45,11 +51,21 @@ public class FlightBookingService implements IFlightBookingService {
                 .toList();
     }
 
+    /**
+     * Encuentra una reserva por su ID.
+     * @param id ID de la reserva
+     * @return DTO con los detalles de la reserva
+     */
     @Override
     public FlightBookingResponseDTO findById(Long id) {
         return buildResponseDTO(findReserveOrThrow(id));
     }
 
+    /**
+     * Encuentra las reservas relacionadas con un vuelo específico.
+     * @param flightId ID del vuelo
+     * @return Lista de reservas para el vuelo
+     */
     @Override
     public List<FlightBookingResponseDTO> findByFlightId(Long flightId) {
         return repository.findByFlightId(flightId).stream()
@@ -57,6 +73,10 @@ public class FlightBookingService implements IFlightBookingService {
                 .toList();
     }
 
+    /**
+     * Elimina una reserva por su ID.
+     * @param id ID de la reserva a eliminar
+     */
     @Override
     public void delete(Long id) {
         FlightBooking booking = findReserveOrThrow(id);
@@ -64,17 +84,34 @@ public class FlightBookingService implements IFlightBookingService {
         repository.delete(booking);
     }
 
+    /**
+     * Encuentra una reserva por su ID o lanza una excepción si no se encuentra.
+     * @param id ID de la reserva
+     * @return La reserva encontrada
+     * @throws ResourceNotFoundException Si no se encuentra la reserva
+     */
     private FlightBooking findReserveOrThrow(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No se ha encontrado la reserva con el ID: " + id));
     }
 
+    /**
+     * Calcula el precio total de una reserva sumando los precios de los asientos.
+     * @param booking Reserva de vuelo
+     * @return Precio total de la reserva
+     */
     private double calculateTotalPrice(FlightBooking booking) {
         return booking.getFlightBookingDetails().stream()
                 .mapToDouble(bookingDetail -> bookingDetail.getSeat().getPrice())
                 .sum();
     }
 
+    /**
+     * Encuentra el vuelo relacionado con una reserva.
+     * @param booking Reserva de vuelo
+     * @return Vuelo relacionado con la reserva
+     * @throws ResourceNotFoundException Si no se encuentra el vuelo
+     */
     private Flight findFlight(FlightBooking booking) {
         return booking.getFlightBookingDetails().stream()
                 .map(flightBookingDetail -> flightBookingDetail.getSeat().getFlight())
@@ -82,7 +119,11 @@ public class FlightBookingService implements IFlightBookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("No se ha encontrado el vuelo"));
     }
 
-
+    /**
+     * Construye un DTO con los detalles de la reserva de vuelo.
+     * @param booking Reserva de vuelo
+     * @return DTO con los detalles de la reserva
+     */
     private FlightBookingResponseDTO buildResponseDTO(FlightBooking booking) {
         return FlightBookingResponseDTO.builder()
                 .reserveId(booking.getId())

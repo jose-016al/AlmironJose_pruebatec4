@@ -1,6 +1,6 @@
 package com.example.gotrip.repository;
 
-import com.example.gotrip.model.FlightBooking;
+import com.example.gotrip.model.Hotel;
 import com.example.gotrip.model.HotelBooking;
 import com.example.gotrip.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -19,8 +19,15 @@ public interface HotelBookingRepository extends JpaRepository<HotelBooking, Long
             "WHERE hbd.room.hotel.id = :hotelId")
     List<HotelBooking> findByHotelId(@Param("hotelId") Long hotelId);
 
-    @Query("SELECT COUNT(hb) > 0 FROM HotelBooking hb WHERE hb.user = :user AND hb.checkIn <= :checkOut AND hb.checkOut >= :checkIn")
+    @Query("SELECT COUNT(hb) > 0 FROM HotelBooking hb " +
+            "JOIN hb.hotelBookingDetails hbd " +
+            "WHERE hb.user = :user " +
+            "AND hb.checkIn <= :checkOut " +
+            "AND hb.checkOut >= :checkIn " +
+            "AND hbd.room.hotel = :hotel")
     boolean existsByUserAndDateRange(@Param("user") User user,
                                      @Param("checkIn") LocalDate checkIn,
-                                     @Param("checkOut") LocalDate checkOut);
+                                     @Param("checkOut") LocalDate checkOut,
+                                     @Param("hotel") Hotel hotel);
+
 }

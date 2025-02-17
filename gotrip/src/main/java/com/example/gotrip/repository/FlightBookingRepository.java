@@ -22,5 +22,4 @@ public interface FlightBookingRepository extends JpaRepository<FlightBooking, Lo
             "JOIN fb.flightBookingDetails fbd " +
             "WHERE fb.user = :user AND fbd.seat.flight = :flight")
     boolean existsByUserAndFlight(@Param("user") User user, @Param("flight") Flight flight);
-
 }
