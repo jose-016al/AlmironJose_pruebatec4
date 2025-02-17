@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -31,7 +32,6 @@ public class HotelBooking {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "room_id")
-    private Room room;
+    @OneToMany(mappedBy = "hotelBooking", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HotelBookingDetail> hotelBookingDetails = new ArrayList<>();
 }

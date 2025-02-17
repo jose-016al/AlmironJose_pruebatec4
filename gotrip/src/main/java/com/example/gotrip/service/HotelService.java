@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -77,13 +78,11 @@ public class HotelService implements IHotelService {
     @Override
     public void delete(Long id) {
         Hotel hotel = findHotelOrThrow(id);
-        boolean hasBookings = hotel.getRooms().stream()
-                .flatMap(room -> room.getBookings().stream())
-                .anyMatch(booking -> booking.getCheckOut().isAfter(LocalDate.now()));
 
-        if (hasBookings) {
+        if (repository.hasActiveBookings(hotel, LocalDate.now())) {
             throw new HotelException("No se puede eliminar el hotel porque tiene reservas activas.");
         }
+
         repository.delete(hotel);
     }
 
@@ -130,30 +129,25 @@ public class HotelService implements IHotelService {
                 .build();
     }
 
-    private List<RoomResponseDTO> getRoomResponseDTOS(Hotel hotel, LocalDate dateFrom, LocalDate dateTo) {
-        return hotel.getRooms().stream()
-                .collect(Collectors.groupingBy(Room::getRoomType))
-                .entrySet().stream()
+    public List<RoomResponseDTO> getRoomResponseDTOS(Hotel hotel, LocalDate dateFrom, LocalDate dateTo) {
+        List<Object[]> availableRooms = repository.countAvailableRoomsByType(hotel, dateFrom, dateTo);
+
+        return availableRooms.stream()
                 .map(entry -> RoomResponseDTO.builder()
-                        .type(entry.getKey().name())
-                        .pricePerNight(entry.getValue().get(0).getPricePerNight())
-                        .availableRooms(countAvailableRoomsByType(
-                                hotel, dateFrom, dateTo
-                        ).getOrDefault(entry.getKey(), 0L).intValue())
+                        .type(((RoomType) entry[0]).name())
+                        .availableRooms(((Long) entry[1]).intValue())
+                        .pricePerNight(getPricePerNightByRoomType(hotel, (RoomType) entry[0]))
                         .build())
                 .toList();
     }
 
-
-    private boolean isRoomAvailable(Room room, LocalDate dateFrom, LocalDate dateTo) {
-        return room.getBookings().stream().noneMatch(booking ->
-                (booking.getCheckIn().isBefore(dateTo) && booking.getCheckOut().isAfter(dateFrom))
-        );
-    }
-
-    private Map<RoomType, Long> countAvailableRoomsByType(Hotel hotel, LocalDate dateFrom, LocalDate dateTo) {
+    private double getPricePerNightByRoomType(Hotel hotel, RoomType roomType) {
         return hotel.getRooms().stream()
-                .filter(room -> isRoomAvailable(room, dateFrom, dateTo))
-                .collect(Collectors.groupingBy(Room::getRoomType, Collectors.counting()));
+                .filter(room -> room.getRoomType() == roomType)
+                .findFirst()
+                .map(Room::getPricePerNight)
+                .orElse(0.0);
+
     }
+
 }

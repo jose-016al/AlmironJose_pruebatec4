@@ -12,7 +12,11 @@ import java.util.List;
 
 @Repository
 public interface SeatRepository extends JpaRepository<Seat, Long> {
-    @Query("SELECT s FROM Seat s WHERE s.flight.flightCode = :flightCode AND s.seatType = :seatType AND s.available = true ORDER BY s.id ASC LIMIT :limit")
+    @Query("SELECT s FROM Seat s " +
+            "WHERE s.flight.flightCode = :flightCode " +
+            "AND s.seatType = :seatType " +
+            "AND s.available = true " +
+            "ORDER BY s.id ASC LIMIT :limit")
     List<Seat> findAvailableSeats(@Param("flightCode") String flightCode,
                                   @Param("seatType") SeatType seatType,
                                   @Param("limit") int limit);

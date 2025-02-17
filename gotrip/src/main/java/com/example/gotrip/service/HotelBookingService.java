@@ -4,7 +4,9 @@ import com.example.gotrip.dto.HotelBookingRequestDTO;
 import com.example.gotrip.dto.HotelBookingResponseDTO;
 import com.example.gotrip.exception.InvalidDateException;
 import com.example.gotrip.exception.ResourceNotFoundException;
+import com.example.gotrip.model.Hotel;
 import com.example.gotrip.model.HotelBooking;
+import com.example.gotrip.model.HotelBookingDetail;
 import com.example.gotrip.model.Room;
 import com.example.gotrip.repository.HotelBookingRepository;
 import com.example.gotrip.util.RoomType;
@@ -19,26 +21,24 @@ public class HotelBookingService implements IHotelBookingService {
 
     private final HotelBookingRepository repository;
     private final IUserService userService;
-    private final IRoomService roomService;
+    private final HotelBookingDetailService hotelBookingDetailService;
 
     @Override
     public HotelBookingResponseDTO save(HotelBookingRequestDTO request) {
         if (!request.getCheckOut().isAfter(request.getCheckIn())) {
             throw new InvalidDateException("La fecha de checkout debe ser posterior a la fecha de checkin.");
         }
-        Room room = roomService.findRoomAvailable(
-                request.getHotelCode(),
-                request.getCheckIn(),
-                request.getCheckOut(),
-                RoomType.valueOf(request.getRoomType().toUpperCase())
-        );
         HotelBooking booking = HotelBooking.builder()
                 .checkIn(request.getCheckIn())
                 .checkOut(request.getCheckOut())
-                .totalPrice(roomService.calculateTotalPrice(room, request.getCheckIn(), request.getCheckOut()))
                 .user(userService.findUser(request.getUser()))
-                .room(room)
                 .build();
+        booking.setHotelBookingDetails(hotelBookingDetailService.generateStays(request, booking));
+        booking.setTotalPrice(hotelBookingDetailService.calculateTotalPrice(
+                booking.getHotelBookingDetails(),
+                request.getCheckIn(),
+                request.getCheckOut()
+        ));
         repository.save(booking);
         return buildResponseDTO(booking);
     }
@@ -72,17 +72,22 @@ public class HotelBookingService implements IHotelBookingService {
                 .orElseThrow(() -> new ResourceNotFoundException("No se ha encontrado la reserva con ID: " + id));
     }
 
+    private Hotel findHotel(HotelBooking booking) {
+        return booking.getHotelBookingDetails().stream()
+                .map(hotelBookingDetail -> hotelBookingDetail.getRoom().getHotel())
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("No se ha encontrado el hotel"));
+    }
 
     private HotelBookingResponseDTO buildResponseDTO(HotelBooking booking) {
         return HotelBookingResponseDTO.builder()
                 .reserveId(booking.getId())
-                .hotelCode(booking.getRoom().getHotel().getHotelCode())
+                .hotelCode(findHotel(booking).getHotelCode())
                 .checkIn(booking.getCheckIn())
                 .checkOut(booking.getCheckOut())
-                .roomType(booking.getRoom().getRoomType().name())
-                .numberRoom(booking.getRoom().getNumber())
                 .totalPrice(booking.getTotalPrice())
                 .user(booking.getUser().getId())
+                .guests(hotelBookingDetailService.getStaysResponseDTOS(booking))
                 .build();
     }
 }

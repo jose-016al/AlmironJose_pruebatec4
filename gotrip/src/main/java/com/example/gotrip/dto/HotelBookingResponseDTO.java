@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter @Builder
 public class HotelBookingResponseDTO {
@@ -16,8 +17,7 @@ public class HotelBookingResponseDTO {
     private String hotelCode;
     private LocalDate checkIn;
     private LocalDate checkOut;
-    private String roomType;
-    private Integer numberRoom;
     private Double totalPrice;
     private Long user;
+    private List<HotelBookingDetailResponseDTO> guests;
 }

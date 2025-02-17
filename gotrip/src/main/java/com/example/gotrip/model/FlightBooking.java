@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -26,5 +27,5 @@ public class FlightBooking {
     private User user;
 
     @OneToMany(mappedBy = "flightBooking", cascade = CascadeType.ALL)
-    private List<FlightBookingDetail> flightBookingDetails;
+    private List<FlightBookingDetail> flightBookingDetails = new ArrayList<>();
 }

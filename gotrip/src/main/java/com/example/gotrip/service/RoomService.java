@@ -1,7 +1,7 @@
 package com.example.gotrip.service;
 
 import com.example.gotrip.exception.HotelException;
-import com.example.gotrip.model.Hotel;
+import com.example.gotrip.model.HotelBookingDetail;
 import com.example.gotrip.model.Room;
 import com.example.gotrip.repository.RoomRepository;
 import com.example.gotrip.util.RoomType;
@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,26 +20,26 @@ public class RoomService implements IRoomService {
     private final IHotelService hotelService;
 
     @Override
-    public Room findRoomAvailable(String hotelCode, LocalDate checkIn, LocalDate checkOut, RoomType roomType) {
-        Hotel hotel = hotelService.findByHotelCode(hotelCode);
+    public List<Room> findRoomAvailable(String hotelCode, LocalDate checkIn, LocalDate checkOut, RoomType roomType, int numberOfRooms) {
+        List<Room> availableRooms = repository.findAvailableRooms(hotelCode, checkIn, checkOut, roomType);
 
-        return hotel.getRooms().stream()
-                .filter(room -> room.getRoomType().equals(roomType) &&
-                        isRoomAvailable(room, checkIn, checkOut))
-                .findFirst()
-                .orElseThrow(() -> new HotelException("No hay habitaciones disponibles"));
+        if (availableRooms.size() < numberOfRooms) {
+            throw new HotelException("No hay suficientes habitaciones disponibles de tipo " + roomType);
+        }
+
+        return availableRooms;
     }
 
     @Override
-    public double calculateTotalPrice(Room room, LocalDate checkIn, LocalDate checkOut) {
+    public double calculateTotalPrice(List<HotelBookingDetail> bookingDetails,
+                                      LocalDate checkIn, LocalDate checkOut) {
         long nights = ChronoUnit.DAYS.between(checkIn, checkOut);
-        return room.getPricePerNight() * nights;
-    }
-
-    private boolean isRoomAvailable(Room room, LocalDate checkIn, LocalDate checkOut) {
-        return room.getBookings().stream().noneMatch(booking ->
-                (booking.getCheckIn().isBefore(checkOut) && booking.getCheckOut().isAfter(checkIn))
-        );
+        return bookingDetails.stream()
+                .mapToDouble(detail -> {
+                    Room room = detail.getRoom();
+                    return room != null ? room.getPricePerNight() * nights : 0;
+                })
+                .sum();
     }
 
 }
