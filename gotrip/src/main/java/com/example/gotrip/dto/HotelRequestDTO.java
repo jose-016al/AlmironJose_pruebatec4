@@ -23,6 +23,7 @@ public class HotelRequestDTO {
     private Integer stars;
 
     @NotNull(message = "La lista de habitaciones no puede ser nula.")
+    @Size(min = 1, message = "La lista de habitaciones debe contener al menos un elemento.")
     @Valid
     private List<RoomRequestDTO> rooms;
 }

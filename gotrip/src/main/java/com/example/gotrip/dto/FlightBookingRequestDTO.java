@@ -6,6 +6,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class FlightBookingRequestDTO {
     private Long user;
 
     @NotNull(message = "La lista de pasajeros no puede ser nula.")
+    @Size(min = 1, message = "La lista de pasajeros debe contener al menos un elemento.")
     @Valid
     private List<FlightBookingDetailRequestDTO> passengers;
 }

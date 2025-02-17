@@ -34,7 +34,6 @@ public class FlightBookingService implements IFlightBookingService {
         if (alreadyBooked) {
             throw new FlightException("Ya tienes una reserva en este vuelo.");
         }
-        flightBookingDetailService.reserveSeat(booking);
         repository.save(booking);
         return buildResponseDTO(booking);
     }

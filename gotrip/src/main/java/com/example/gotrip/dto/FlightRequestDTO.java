@@ -29,6 +29,7 @@ public class FlightRequestDTO {
     private LocalDate returnDate;
 
     @NotNull(message = "La lista de asientos no puede ser nula.")
+    @Size(min = 1, message = "La lista de asientos debe contener al menos un elemento.")
     @Valid
     private List<SeatRequestDTO> seats;
 }
