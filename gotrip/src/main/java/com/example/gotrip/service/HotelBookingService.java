@@ -4,6 +4,7 @@ import com.example.gotrip.dto.HotelBookingRequestDTO;
 import com.example.gotrip.dto.HotelBookingResponseDTO;
 import com.example.gotrip.exception.HotelException;
 import com.example.gotrip.exception.InvalidDateException;
+import com.example.gotrip.exception.NoContentException;
 import com.example.gotrip.exception.ResourceNotFoundException;
 import com.example.gotrip.model.Hotel;
 import com.example.gotrip.model.HotelBooking;
@@ -61,7 +62,11 @@ public class HotelBookingService implements IHotelBookingService {
      */
     @Override
     public List<HotelBookingResponseDTO> findAll() {
-        return repository.findAll().stream()
+        List<HotelBooking> bookings = repository.findAll();
+        if (bookings.isEmpty()) {
+            throw new NoContentException("No hay reservas disponibles en este momento.");
+        }
+        return bookings.stream()
                 .map(this::buildResponseDTO)
                 .toList();
     }
@@ -83,7 +88,11 @@ public class HotelBookingService implements IHotelBookingService {
      */
     @Override
     public List<HotelBookingResponseDTO> findByHotelId(Long hotelId) {
-        return repository.findByHotelId(hotelId).stream()
+        List<HotelBooking> bookings = repository.findByHotelId(hotelId);
+        if (bookings.isEmpty()) {
+            throw new NoContentException("No hay reservas disponibles en este momento.");
+        }
+        return bookings.stream()
                 .map(this::buildResponseDTO)
                 .toList();
     }

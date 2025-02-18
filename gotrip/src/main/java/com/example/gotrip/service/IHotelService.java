@@ -13,6 +13,6 @@ public interface IHotelService {
     public List<HotelResponseDTO> searchHotels(LocalDate dateFrom, LocalDate dateTo, String destination);
     public HotelResponseDTO findById(Long id);
     public Hotel findByHotelCode(String hotelCode);
-    public HotelResponseDTO update(Long id, HotelRequestDTO request);
+    public HotelResponseDTO update(Long id, String name, String location, Integer stars);
     public void delete(Long id);
 }

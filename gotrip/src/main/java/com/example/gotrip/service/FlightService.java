@@ -3,6 +3,7 @@ package com.example.gotrip.service;
 import com.example.gotrip.dto.*;
 import com.example.gotrip.exception.FlightException;
 import com.example.gotrip.exception.InvalidDateException;
+import com.example.gotrip.exception.NoContentException;
 import com.example.gotrip.exception.ResourceNotFoundException;
 import com.example.gotrip.model.Flight;
 import com.example.gotrip.model.Seat;
@@ -52,7 +53,11 @@ public class FlightService implements IFlightService {
      */
     @Override
     public List<FlightResponseDTO> findAll() {
-        return repository.findAll().stream()
+        List<Flight> flights = repository.findAll();
+        if (flights.isEmpty()) {
+            throw new NoContentException("No hay vuelos disponibles en este momento.");
+        }
+        return flights.stream()
                 .map(this::buildResponseDTO)
                 .toList();
     }
@@ -67,7 +72,11 @@ public class FlightService implements IFlightService {
      */
     @Override
     public List<FlightResponseDTO> searchFlights(LocalDate dateFrom, LocalDate dateTo, String origin, String destination) {
-        return repository.searchFlights(dateFrom, dateTo, origin, destination).stream()
+        List<Flight> flights = repository.searchFlights(dateFrom, dateTo, origin, destination);
+        if (flights.isEmpty()) {
+            throw new NoContentException("No hay vuelos disponibles en este momento.");
+        }
+        return flights.stream()
                 .map(this::buildResponseDTO)
                 .toList();
     }
@@ -95,20 +104,26 @@ public class FlightService implements IFlightService {
     }
 
     /**
-     * Actualiza un vuelo existente con nuevos datos.
-     * @param id ID del vuelo a actualizar
-     * @param request Nuevos datos de la solicitud
-     * @return DTO de la respuesta con los detalles del vuelo actualizado
+     * Actualiza los datos de un vuelo existente. Solo se actualizarán los campos que se proporcionen.
+     *
+     * @param id El ID del vuelo a actualizar.
+     * @param origin El nuevo origen del vuelo (opcional).
+     * @param destination El nuevo destino del vuelo (opcional).
+     * @param airline La nueva aerolínea del vuelo (opcional).
+     * @param departureDate La nueva fecha de salida del vuelo (opcional).
+     * @param returnDate La nueva fecha de regreso del vuelo (opcional).
+     * @return Los datos del vuelo actualizado.
      */
     @Override
-    public FlightResponseDTO update(Long id, FlightRequestDTO request) {
+    public FlightResponseDTO update(Long id, String origin, String destination, String airline,
+                                    LocalDate departureDate, LocalDate returnDate) {
         Flight flight = findFlightOrThrow(id);
 
-        flight.setOrigin(request.getOrigin());
-        flight.setDestination(request.getDestination());
-        flight.setAirline(request.getAirline());
-        flight.setDepartureDate(request.getDepartureDate());
-        flight.setReturnDate(request.getReturnDate());
+        if (origin != null) flight.setOrigin(origin);
+        if (destination != null) flight.setDestination(destination);
+        if (airline != null) flight.setAirline(airline);
+        if (departureDate != null) flight.setDepartureDate(departureDate);
+        if (returnDate != null) flight.setReturnDate(returnDate);
 
         repository.save(flight);
         return buildResponseDTO(flight);

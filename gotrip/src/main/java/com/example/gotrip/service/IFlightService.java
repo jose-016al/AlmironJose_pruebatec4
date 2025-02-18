@@ -15,6 +15,6 @@ public interface IFlightService {
     public List<FlightResponseDTO> searchFlights(LocalDate dateFrom, LocalDate dateTo, String origin, String destination);
     public FlightResponseDTO findById(Long id);
     public Flight findByFlightCode(String flightCode);
-    public FlightResponseDTO update(Long id, FlightRequestDTO request);
+    public FlightResponseDTO update(Long id, String origin, String destination, String airline, LocalDate departureDate, LocalDate returnDate);
     public void delete(Long id);
 }

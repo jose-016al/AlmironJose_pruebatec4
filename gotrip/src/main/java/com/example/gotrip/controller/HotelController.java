@@ -26,6 +26,7 @@ public class HotelController {
     @Operation(summary = "Crear un nuevo hotel", description = "Registra un nuevo hotel en la base de datos.")
     @ApiResponse(responseCode = "201", description = "Hotel creado exitosamente")
     @ApiResponse(responseCode = "400", description = "Error de validación: los datos proporcionados no son válidos")
+    @ApiResponse(responseCode = "401", description = "No autorizado. La solicitud requiere autenticación del usuario.")
     @PostMapping("/new")
     public ResponseEntity<HotelResponseDTO> save(@RequestBody @Valid HotelRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.save(request));
@@ -51,6 +52,7 @@ public class HotelController {
 
     @Operation(summary = "Obtener un hotel por ID", description = "Devuelve los detalles de un hotel específico según su ID.")
     @ApiResponse(responseCode = "200", description = "Hotel encontrado")
+    @ApiResponse(responseCode = "401", description = "No autorizado. La solicitud requiere autenticación del usuario.")
     @ApiResponse(responseCode = "404", description = "Hotel no encontrado: el ID proporcionado no existe en la base de datos")
     @GetMapping("/{id}")
     public ResponseEntity<HotelResponseDTO> findById(@PathVariable Long id) {
@@ -60,15 +62,19 @@ public class HotelController {
     @Operation(summary = "Actualizar un hotel", description = "Modifica los datos de un hotel según su ID y devuelve la información actualizada.")
     @ApiResponse(responseCode = "200", description = "Hotel actualizado correctamente")
     @ApiResponse(responseCode = "400", description = "Error de validación: los datos proporcionados no son válidos")
+    @ApiResponse(responseCode = "401", description = "No autorizado. La solicitud requiere autenticación del usuario.")
     @ApiResponse(responseCode = "404", description = "Hotel no encontrado: el ID proporcionado no existe en la base de datos")
     @PutMapping("/edit/{id}")
     public ResponseEntity<HotelResponseDTO> update(@PathVariable Long id,
-                                                   @RequestBody @Valid HotelRequestDTO request) {
-        return ResponseEntity.ok(service.findById(id));
+                                                   @RequestParam(required = false) @Valid String name,
+                                                   @RequestParam(required = false) @Valid String location,
+                                                   @RequestParam(required = false) @Valid Integer stars) {
+        return ResponseEntity.ok(service.update(id, name, location, stars));
     }
 
     @Operation(summary = "Eliminar un hotel", description = "Elimina un hotel de la base de datos según su ID.")
     @ApiResponse(responseCode = "204", description = "Hotel eliminado correctamente")
+    @ApiResponse(responseCode = "401", description = "No autorizado. La solicitud requiere autenticación del usuario.")
     @ApiResponse(responseCode = "404", description = "Hotel no encontrado: el ID proporcionado no existe en la base de datos")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {

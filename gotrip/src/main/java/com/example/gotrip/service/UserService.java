@@ -2,6 +2,7 @@ package com.example.gotrip.service;
 
 import com.example.gotrip.dto.UserRequestDTO;
 import com.example.gotrip.dto.UserResponseDTO;
+import com.example.gotrip.exception.NoContentException;
 import com.example.gotrip.exception.ResourceNotFoundException;
 import com.example.gotrip.model.User;
 import com.example.gotrip.repository.UserRepository;
@@ -41,7 +42,11 @@ public class UserService implements IUserService {
      */
     @Override
     public List<UserResponseDTO> findAll() {
-        return repository.findAll().stream()
+        List<User> users = repository.findAll();
+        if (users.isEmpty()) {
+            throw new NoContentException("No hay usuarios disponibles en este momento.");
+        }
+        return users.stream()
                 .map(this::buildResponseDTO)
                 .toList();
     }

@@ -2,6 +2,7 @@ package com.example.gotrip.service;
 
 import com.example.gotrip.dto.*;
 import com.example.gotrip.exception.FlightException;
+import com.example.gotrip.exception.NoContentException;
 import com.example.gotrip.exception.ResourceNotFoundException;
 import com.example.gotrip.model.*;
 import com.example.gotrip.repository.FlightBookingRepository;
@@ -46,7 +47,11 @@ public class FlightBookingService implements IFlightBookingService {
      */
     @Override
     public List<FlightBookingResponseDTO> findAll() {
-        return repository.findAll().stream()
+        List<FlightBooking> bookings= repository.findAll();
+        if (bookings.isEmpty()) {
+            throw new NoContentException("No hay reservas disponibles en este momento.");
+        }
+        return bookings.stream()
                 .map(this::buildResponseDTO)
                 .toList();
     }
@@ -68,7 +73,11 @@ public class FlightBookingService implements IFlightBookingService {
      */
     @Override
     public List<FlightBookingResponseDTO> findByFlightId(Long flightId) {
-        return repository.findByFlightId(flightId).stream()
+        List<FlightBooking> bookings = repository.findByFlightId(flightId) ;
+        if (bookings.isEmpty()) {
+            throw new NoContentException("No hay reservas disponibles en este momento.");
+        }
+        return bookings.stream()
                 .map(this::buildResponseDTO)
                 .toList();
     }

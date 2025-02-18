@@ -5,6 +5,7 @@ import com.example.gotrip.dto.HotelResponseDTO;
 import com.example.gotrip.dto.RoomRequestDTO;
 import com.example.gotrip.dto.RoomResponseDTO;
 import com.example.gotrip.exception.HotelException;
+import com.example.gotrip.exception.NoContentException;
 import com.example.gotrip.exception.ResourceNotFoundException;
 import com.example.gotrip.model.Hotel;
 import com.example.gotrip.model.Room;
@@ -49,7 +50,11 @@ public class HotelService implements IHotelService {
      */
     @Override
     public List<HotelResponseDTO> findAll() {
-        return repository.findAll().stream()
+        List<Hotel> hotels = repository.findAll();
+        if (hotels.isEmpty()) {
+            throw new NoContentException("No hay hoteles disponibles en este momento.");
+        }
+        return hotels.stream()
                 .map(hotel -> buildResponseDTO(hotel, LocalDate.now(), LocalDate.now()))
                 .toList();
     }
@@ -64,7 +69,11 @@ public class HotelService implements IHotelService {
      */
     @Override
     public List<HotelResponseDTO> searchHotels(LocalDate dateFrom, LocalDate dateTo, String destination) {
-        return repository.findAll().stream()
+        List<Hotel> hotels = repository.findAll();
+        if (hotels.isEmpty()) {
+            throw new NoContentException("No hay hoteles disponibles en este momento.");
+        }
+        return hotels.stream()
                 .filter(hotel -> hotel.getLocation().equalsIgnoreCase(destination))
                 .map(hotel -> buildResponseDTO(hotel, dateFrom, dateTo))
                 .toList();
@@ -94,18 +103,20 @@ public class HotelService implements IHotelService {
     }
 
     /**
-     * Actualiza los datos de un hotel existente.
+     * Actualiza los datos de un hotel existente. Solo se actualizarán los campos que se proporcionen.
      *
      * @param id El ID del hotel a actualizar.
-     * @param request Los nuevos datos del hotel.
+     * @param name El nuevo nombre del hotel (opcional).
+     * @param location La nueva ubicación del hotel (opcional).
+     * @param stars El nuevo número de estrellas del hotel (opcional).
      * @return Los datos del hotel actualizado.
      */
     @Override
-    public HotelResponseDTO update(Long id, HotelRequestDTO request) {
+    public HotelResponseDTO update(Long id, String name, String location, Integer stars) {
         Hotel hotel = findHotelOrThrow(id);
-        hotel.setName(request.getName());
-        hotel.setLocation(request.getLocation());
-        hotel.setStars(request.getStars());
+        if (name != null) hotel.setName(name);
+        if (location != null) hotel.setLocation(location);
+        if (stars != null) hotel.setStars(stars);
         repository.save(hotel);
         return buildResponseDTO(hotel, LocalDate.now(), LocalDate.now());
     }

@@ -32,6 +32,7 @@ public class FlightBookingController {
 
     @Operation(summary = "Obtener todas las reservas de vuelos", description = "Devuelve la lista de todas las reservas de vuelos existentes.")
     @ApiResponse(responseCode = "200", description = "Lista de reservas obtenida exitosamente")
+    @ApiResponse(responseCode = "401", description = "No autorizado. La solicitud requiere autenticación del usuario.")
     @GetMapping
     public ResponseEntity<List<FlightBookingResponseDTO>> findAll() {
         return ResponseEntity.ok(service.findAll());
@@ -39,6 +40,7 @@ public class FlightBookingController {
 
     @Operation(summary = "Obtener una reserva de vuelo por ID", description = "Devuelve los detalles de una reserva específica según su ID.")
     @ApiResponse(responseCode = "200", description = "Reserva encontrada")
+    @ApiResponse(responseCode = "401", description = "No autorizado. La solicitud requiere autenticación del usuario.")
     @ApiResponse(responseCode = "404", description = "Reserva no encontrada: el ID proporcionado no existe en la base de datos")
     @GetMapping("/{id}")
     public ResponseEntity<FlightBookingResponseDTO> findById(@PathVariable Long id) {
@@ -47,6 +49,7 @@ public class FlightBookingController {
 
     @Operation(summary = "Obtener reservas por ID de vuelo", description = "Devuelve la lista de reservas asociadas a un vuelo específico.")
     @ApiResponse(responseCode = "200", description = "Reservas obtenidas exitosamente")
+    @ApiResponse(responseCode = "401", description = "No autorizado. La solicitud requiere autenticación del usuario.")
     @ApiResponse(responseCode = "404", description = "No se encontraron reservas para el vuelo especificado")
     @GetMapping("/flight/{flightId}")
     public ResponseEntity<List<FlightBookingResponseDTO>> findByFlightId(@PathVariable Long flightId) {
@@ -55,6 +58,7 @@ public class FlightBookingController {
 
     @Operation(summary = "Eliminar una reserva de vuelo", description = "Elimina una reserva de vuelo del sistema según su ID.")
     @ApiResponse(responseCode = "204", description = "Reserva eliminada correctamente")
+    @ApiResponse(responseCode = "401", description = "No autorizado. La solicitud requiere autenticación del usuario.")
     @ApiResponse(responseCode = "404", description = "Reserva no encontrada: el ID proporcionado no existe en la base de datos")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
