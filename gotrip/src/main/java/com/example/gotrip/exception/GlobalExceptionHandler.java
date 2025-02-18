@@ -115,6 +115,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 
+    /**
+     * Maneja la excepción NoContentException.
+     *
+     * Este método se ejecuta cuando se lanza una NoContentException, lo que indica que no hay
+     * contenido disponible para mostrar (por ejemplo, una lista vacía en una consulta).
+     * En lugar de devolver un código 204 (No Content), devuelve un código 200 (OK) con
+     * un mensaje explicativo en el cuerpo de la respuesta.
+     *
+     * @param ex La excepción capturada de tipo NoContentException.
+     * @return ResponseEntity con estado HTTP 200 y el mensaje de la excepción en el cuerpo.
+     */
     @ExceptionHandler(NoContentException.class)
     public ResponseEntity<String> handleNoContentException(NoContentException ex) {
         return ResponseEntity.status(HttpStatus.OK).body(ex.getMessage());
