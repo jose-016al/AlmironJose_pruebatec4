@@ -8,7 +8,6 @@ GoTrip es una plataforma de turismo que permite a los usuarios buscar y reservar
 - [API Endpoints](#api-endpoints)
 - [Carga de Datos de Prueba](#carga-de-datos-de-prueba)
 - [Modelo Entidad-Relación](#modelo-entidad-relación)
-- [Versión en Vivo](#versión-en-vivo)
 
 ### **Requisitos Previos**
 Para ejecutar GoTrip en tu entorno local, necesitas tener instalado:
@@ -25,11 +24,11 @@ En el directorio raíz del proyecto, ejecuta los siguientes comandos para constr
 docker-compose up --build
 ```
 3. **Acceso a la API**:  
-Una vez que Docker haya iniciado los contenedores, puedes acceder a la API en `http://localhost:8080`.
+Una vez que Docker haya iniciado los contenedores, puedes acceder a la API en `http://localhost:80`.
 ### **API Endpoints**
 La documentación completa de la API está disponible en Swagger. Para acceder, abre el siguiente enlace después de haber iniciado el proyecto en Docker:
 
-http://localhost:8080/swagger-ui.html
+http://localhost/doc/swagger-ui/index.html
 
 Además, en el repositorio encontrarás una colección de Postman para probar los endpoints fácilmente. Solo tienes que importar el archivo `GoTrip.postman_collection.json` a Postman.
 ### **Carga de Datos de Prueba**
@@ -50,10 +49,3 @@ Con esto, la base de datos se poblará con los datos de prueba proporcionados.
 A continuación, se muestra el modelo entidad-relación que representa la estructura de la base de datos del proyecto:  
  
 ![Modelo entidad-relación](./Modelo-entidad-relación.jpg)
-
-### **Versión en Vivo**
-Puedes probar la aplicación en vivo a través del siguiente enlace:
-
-[Enlace a la aplicación en vivo](http://enlace-a-tu-aplicacion.com)
-
-Esto te permitirá interactuar con los endpoints directamente y probar las funcionalidades de la plataforma GoTrip.
