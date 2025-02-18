@@ -26,17 +26,18 @@ public class FlightBookingService implements IFlightBookingService {
      */
     @Override
     public FlightBookingResponseDTO save(FlightBookingRequestDTO request) {
+        boolean alreadyBooked = repository.existsByUserAndFlight(
+                userService.findUser(request.getUser()),
+                flightBookingDetailService.findByFlightCode(request.getFlightCode())
+        );
+        if (alreadyBooked) {
+            throw new FlightException("Ya tienes una reserva en este vuelo.");
+        }
         FlightBooking booking = FlightBooking.builder()
                 .user(userService.findUser(request.getUser()))
                 .build();
         booking.setFlightBookingDetails(flightBookingDetailService.generateDetails(request, booking));
         booking.setTotalPrice(calculateTotalPrice(booking));
-        boolean alreadyBooked = repository.existsByUserAndFlight(
-                booking.getUser(), flightBookingDetailService.findByFlightCode(request.getFlightCode())
-        );
-        if (alreadyBooked) {
-            throw new FlightException("Ya tienes una reserva en este vuelo.");
-        }
         repository.save(booking);
         return buildResponseDTO(booking);
     }

@@ -33,7 +33,10 @@ public class FlightBookingDetailService implements IFlightBookingDetailService {
                 request.getFlightCode(),
                 request.getPassengers()
         );
-
+        seatService.reserveSeat(availableSeatsByType.values()
+                .stream()
+                .flatMap(List::stream)
+                .toList());
         Map<SeatType, AtomicInteger> seatIndexByType = availableSeatsByType.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> new AtomicInteger(0)));
 
