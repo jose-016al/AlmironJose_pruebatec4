@@ -2,6 +2,7 @@ package com.example.gotrip.exception;
 
 import com.example.gotrip.util.SeatType;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import io.swagger.v3.oas.annotations.Hidden;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Hidden
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -94,11 +96,11 @@ public class GlobalExceptionHandler {
      * Maneja las excepciones cuando no se encuentra el recurso solicitado.
      *
      * @param ex La excepción de recurso no encontrado.
-     * @return Una respuesta HTTP con el estado BAD_REQUEST (400) y un mensaje con detalles sobre el recurso no encontrado.
+     * @return Una respuesta HTTP con el estado NOT_FOUND (404) y un mensaje con detalles sobre el recurso no encontrado.
      */
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<String> handleNoResource(NoResourceFoundException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body("El recurso solicitado no se ha encontrado: " + ex.getMessage());
     }
 
@@ -106,10 +108,10 @@ public class GlobalExceptionHandler {
      * Maneja las excepciones de recurso no encontrado (ResourceNotFoundException).
      *
      * @param ex La excepción de recurso no encontrado.
-     * @return Una respuesta HTTP con el estado BAD_REQUEST (400) y el mensaje de la excepción.
+     * @return Una respuesta HTTP con el estado NOT_FOUND (404) y el mensaje de la excepción.
      */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<String> handleResourceNotFound(ResourceNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
 }
