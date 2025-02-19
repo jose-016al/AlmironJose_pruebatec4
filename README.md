@@ -32,18 +32,20 @@ http://localhost/doc/swagger-ui/index.html
 
 Además, en el repositorio encontrarás una colección de Postman para probar los endpoints fácilmente. Solo tienes que importar el archivo `GoTrip.postman_collection.json` a Postman.
 ### **Carga de Datos de Prueba**
-Si deseas cargar datos de prueba en tu base de datos, puedes usar el archivo `go_trip.sql` incluido en el repositorio. Para hacerlo, sigue estos pasos:
+Si deseas realizar pruebas en local, deberás importar manualmente el archivo go_trip.sql a tu sistema gestor de base de datos. A continuación, se detallan los pasos:
 
-1. **Eliminar la base de datos existente**  
-Para evitar conflictos debido a tablas que ya existen, primero eliminaremos la base de datos y la recrearemos:
+1. Crear la base de datos (si no existe)
+Antes de importar los datos, asegúrate de que la base de datos go_trip existe en tu sistema. Si no, créala con el siguiente comando en MySQL:
 ```bash
-docker exec -it db mysql -u user -puser -e "DROP DATABASE go_trip; CREATE DATABASE go_trip;"
+CREATE DATABASE go_trip;
 ```
-2. **Volcar el contenido del archivo `.sql`**  
-A continuación, cargamos el archivo `go_trip.sql` en la base de datos. Ten en cuenta que este proceso puede tardar unos minutos dependiendo del tamaño del archivo:
+2. Importar el archivo SQL
+Para volcar el contenido del archivo go_trip.sql en la base de datos, usa el siguiente comando en la terminal:
 ```bash
-docker exec -i db mysql -u user -puser go_trip < go_trip.sql
+mysql -u user -p go_trip < go_trip.sql
 ```
+Reemplaza user por tu usuario de MySQL. Se te pedirá la contraseña.
+
 Con esto, la base de datos se poblará con los datos de prueba proporcionados.
 ### **Modelo Entidad-Relación**
 A continuación, se muestra el modelo entidad-relación que representa la estructura de la base de datos del proyecto:  

@@ -6,42 +6,9 @@ services:
     ports:
       - "80:8080"
     environment:
-      DB_URL: jdbc:mysql://db:3306/go_trip?createDatabaseIfNotExist=true&serverTimezone=UTC
-      DB_USER_NAME: user
-      DB_PASSWORD: user
+      DB_URL: jdbc:mysql://upnbp4bvbjfo0vxv:kXoUlqMw280ZEISazwbe@bsj6fhleaamwxxnbqsdl-mysql.services.clever-cloud.com:3306/bsj6fhleaamwxxnbqsdl
+      DB_USER_NAME: upnbp4bvbjfo0vxv
+      DB_PASSWORD: kXoUlqMw280ZEISazwbe
       SPRING_SECURITY_NAME: empleado
       SPRING_SECURITY_PASSWORD: empleado123
     restart: always
-    depends_on:
-      db:
-        condition: service_healthy
-    networks:
-      - gotrip_net
-
-  db:
-    container_name: db
-    image: mysql:8.0
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: 1234
-      MYSQL_DATABASE: go_trip
-      MYSQL_USER: user
-      MYSQL_PASSWORD: user
-    volumes:
-      - mysql_data:/var/lib/mysql
-    restart: always
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uuser", "-puser"]
-      timeout: 10s
-      retries: 10
-    networks:
-      - gotrip_net
-
-volumes:
-  mysql_data:
-    driver: local
-
-networks:
-  gotrip_net:
-    driver: bridge
