@@ -44,8 +44,13 @@ services:
       SPRING_SECURITY_PASSWORD: empleado123
     restart: always
 ```
-- En principio, host.docker.internal debería funcionar para conectar el contenedor con la base de datos en tu máquina host. Solo necesitarás modificar las credenciales de MySQL.
-- Si la conexión no funciona, también puedes ajustar la ruta de la base de datos en la variable DB_URL.  
+Las variables de entorno son las siguientes:
+
+- DB_URL: Es la ruta de conexión para la base de datos. Es importante no utilizar `localhost`, ya que el contenedor no lo reconocerá. En su lugar, debemos usar `host.internal.docker`, seguido de la IP de la máquina anfitriona donde se encuentra el SGBD. La base de datos se creará automáticamente.
+- DB_USER_NAME: Es el nombre de usuario del SGBD.
+- DB_PASSWORD: Es la contraseña del usuario del SGBD.
+- SPRING_SECURITY_NAME: Nombre de usuario para Spring Security.
+- SPRING_SECURITY_PASSWORD: Contraseña del usuario de Spring Security.
 
 ### Construir y ejecutar con Docker:  
 En el directorio raíz del proyecto, ejecuta los siguientes comandos para construir y ejecutar la aplicación en Docker:
@@ -87,7 +92,6 @@ Una vez completado este proceso, la base de datos se poblará con los datos de p
 A continuación, se muestra el modelo entidad-relación que representa la estructura de la base de datos del proyecto:  
  
 ![Modelo entidad-relación](./Modelo-entidad-relación.jpg)
-
 ## **Versión en Vivo**
 Puedes probar la aplicación en vivo a través del siguiente enlace:
 
