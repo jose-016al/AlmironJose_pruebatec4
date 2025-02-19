@@ -1,4 +1,11 @@
+# Etapa de construcción (compila el proyecto)
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
+
+# Etapa final (ejecuta el `.jar`)
 FROM openjdk:17-jdk-slim
-ARG JAR_FILE=gotrip-0.0.1.jar
-COPY ${JAR_FILE} gotrip.jar
+WORKDIR /app
+COPY --from=builder /app/target/gotrip-0.0.1.jar gotrip.jar
 ENTRYPOINT ["java", "-jar", "gotrip.jar"]
