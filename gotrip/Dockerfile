@@ -8,4 +8,5 @@ RUN mvn clean package -DskipTests
 FROM openjdk:17-jdk-slim
 WORKDIR /app
 COPY --from=builder /app/target/gotrip-0.0.1.jar gotrip.jar
-ENTRYPOINT ["java", "-jar", "gotrip.jar"]
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "gotrip.jar", "--server.port=${PORT}"]
